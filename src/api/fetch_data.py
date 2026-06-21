@@ -10,7 +10,7 @@ def fetch_apartment_data(service_key, lawd_cd, deal_ym):
     :param lawd_cd: 지역코드 (예: 11110 - 서울특별시 종로구)
     :param deal_ym: 거래년월 (예: 202605)
     """
-    url = "http://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev"
+    url = "https://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev"
     
     params = {
         'serviceKey': service_key,
