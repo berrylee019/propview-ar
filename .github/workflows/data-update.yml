@@ -12,6 +12,10 @@ jobs:
       contents: write # 리포지토리에 커밋/푸시하기 위한 권한
     
     steps:
+      - name: Test Network Connection
+        run: |
+          curl -I https://openapi.molit.go.kr
+          
       - name: Checkout repository
         uses: actions/checkout@v4
 
