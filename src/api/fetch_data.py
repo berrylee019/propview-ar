@@ -18,7 +18,10 @@ def fetch_apartment_data(service_key, lawd_cd, deal_ym):
         'DEAL_YMD': deal_ym
     }
     
-    response = requests.get(url, params=params)
+    headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+    response = requests.get(url, params=params, headers=headers, timeout=10)
     
     if response.status_code == 200:
         root = ET.fromstring(response.content)
