@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
 import os
+import urllib.request
+import urllib.parse
+
+def fetch_apartment_data_robust(service_key, lawd_cd, deal_ym):
+    base_url = "https://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev"
+    params = {'serviceKey': service_key, 'LAWD_CD': lawd_cd, 'DEAL_YMD': deal_ym}
+    url = f"{base_url}?{urllib.parse.urlencode(params)}"
+    
+    with urllib.request.urlopen(url) as response:
+        return response.read().decode('utf-8')
 
 # 현재 경로에 어떤 파일이 있는지 출력해서 디버깅
 st.write("현재 경로 파일 리스트:", os.listdir('.'))
