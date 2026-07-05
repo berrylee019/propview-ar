@@ -2,6 +2,7 @@ import os
 import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
+from dotenv import load_dotenv
 
 def fetch_apartment_data(service_key, lawd_cd, deal_ym):
     """
