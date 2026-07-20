@@ -12,19 +12,26 @@ def fetch_seoul_apartment_data(service_key):
     # 서울시 Open API는 보통 인증키가 URL 경로에 포함됩니다.
     url = f"http://openAPI.seoul.go.kr:8088/{service_key}/json/tbLnOaOpenStndrd/1/5/"
     
-    print(f"서울시 API 요청 중: {url}")
+    print(f"서울시 API 요청 중...")
     
     try:
         response = requests.get(url, timeout=10)
-        data = response.json()
+        print(f"HTTP 상태 코드: {response.status_code}")
         
-        # 서울시 API 응답 구조에 따른 데이터 추출
+        # 만약 에러 페이지가 리턴되면 내용을 확인하기 위해 출력
+        if response.status_code != 200:
+            print(f"서버 응답 에러: {response.text}")
+            return None
+            
+        data = response.json()
+        print("서버 응답 성공:", data)
+        
         if "tbLnOaOpenStndrd" in data:
             rows = data["tbLnOaOpenStndrd"]["row"]
             df = pd.DataFrame(rows)
             return df
         else:
-            print("데이터 구조를 확인해주세요:", data)
+            print("API 응답 메시지 구조:", data)
             return None
             
     except Exception as e:
