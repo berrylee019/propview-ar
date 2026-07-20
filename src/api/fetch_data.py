@@ -17,6 +17,11 @@ def fetch_seoul_apartment_data(service_key):
     try:
         response = requests.get(url, timeout=10)
         print(f"HTTP 상태 코드: {response.status_code}")
+
+        # [추가] 서버가 실제로 준 날것의 응답 내용 확인하기
+        print(f"서버 응답 원문: {response.text[:200]}") # 너무 길 수 있으니 앞 200자만 출력
+            
+        data = response.json()
         
         # 만약 에러 페이지가 리턴되면 내용을 확인하기 위해 출력
         if response.status_code != 200:
