@@ -10,7 +10,7 @@ load_dotenv()
 def fetch_seoul_apartment_data(service_key):
     # 서울시 부동산 실거래가 정보 API 엔드포인트 (예시: 신청하신 서비스 규격에 맞춤)
     # 서울시 Open API는 보통 인증키가 URL 경로에 포함됩니다.
-    url = f"http://openAPI.seoul.go.kr:8088/{service_key}/json/tbLnOaOpenStndrd/1/1000/"
+    url = f"http://openAPI.seoul.go.kr:8088/{service_key}/json/tbLnOaOpenStndrd/1/5/"
     
     print(f"서울시 API 요청 중: {url}")
     
