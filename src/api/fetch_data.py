@@ -4,54 +4,38 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 
-def fetch_apartment_data(service_key, lawd_cd, deal_ym):
-    """
-    국토교통부 아파트 실거래가 API 호출 함수
-    :param service_key: 공공데이터포털에서 발급받은 인증키
-    :param lawd_cd: 지역코드 (예: 11110 - 서울특별시 종로구)
-    :param deal_ym: 거래년월 (예: 202605)
-    """
-    url = "https://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev"
+def fetch_seoul_apartment_data(service_key):
+    # 서울시 부동산 실거래가 정보 API 엔드포인트 (예시: 신청하신 서비스 규격에 맞춤)
+    # 서울시 Open API는 보통 인증키가 URL 경로에 포함됩니다.
+    url = f"http://openAPI.seoul.go.kr:8088/{service_key}/json/tbLnOaOpenStndrd/1/1000/"
     
-    params = {
-        'serviceKey': service_key,
-        'LAWD_CD': lawd_cd,
-        'DEAL_YMD': deal_ym
-    }
+    print(f"서울시 API 요청 중: {url}")
     
-    headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-}
-    response = requests.get(url, params=params, headers=headers, timeout=10)
-    
-    if response.status_code == 200:
-        root = ET.fromstring(response.content)
-        items = []
-        for item in root.findall('.//item'):
-            data = {
-                '아파트': item.find('아파트').text.strip(),
-                '거래금액': item.find('거래금액').text.strip(),
-                '전용면적': item.find('전용면적').text.strip(),
-                '층': item.find('층').text.strip(),
-                '년': item.find('년').text.strip(),
-                '월': item.find('월').text.strip(),
-                '일': item.find('일').text.strip()
-            }
-            items.append(data)
-        return pd.DataFrame(items)
-    else:
-        print(f"Error: {response.status_code}")
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        # 서울시 API 응답 구조에 따른 데이터 추출
+        if "tbLnOaOpenStndrd" in data:
+            rows = data["tbLnOaOpenStndrd"]["row"]
+            df = pd.DataFrame(rows)
+            return df
+        else:
+            print("데이터 구조를 확인해주세요:", data)
+            return None
+            
+    except Exception as e:
+        print(f"에러 발생: {e}")
         return None
 
-# 사용 예시
 if __name__ == "__main__":
-    # 형님의 API 인증키를 여기에 입력하세요
-    MY_SERVICE_KEY = os.getenv("SERVICE_KEY")
+    # 방금 발급받으신 서울시 인증키를 여기에 넣으세요!
+    MY_SERVICE_KEY = "여기에_서울시_인증키_입력"
     
-    # 예: 서울 종로구, 2026년 5월 데이터
-    df = fetch_apartment_data(MY_SERVICE_KEY, "11110", "202605")
+    df = fetch_seoul_apartment_data(MY_SERVICE_KEY)
     
-    if df is not None:
-        print(df.head())
-        # 나중에 데이터를 파일로 저장하거나 PropView 엔진으로 넘길 수 있습니다.
-        df.to_csv("apt_data.csv", index=False, encoding='utf-8-sig')
+    if df is not None and not df.empty:
+        df.to_csv("apt_data.csv", index=False, encoding="utf-8-sig")
+        print("데이터 저장 성공: apt_data.csv")
+    else:
+        print("데이터 수집 실패...")
