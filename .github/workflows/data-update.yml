@@ -13,8 +13,8 @@ jobs:
     
     steps:
       - name: Test Network Connection
-        run: |
-          curl -I https://openapi.molit.go.kr
+       # run: |
+       #   curl -I https://openapi.molit.go.kr
           
       - name: Checkout repository
         uses: actions/checkout@v4
