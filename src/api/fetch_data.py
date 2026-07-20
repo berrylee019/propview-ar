@@ -44,3 +44,5 @@ if __name__ == "__main__":
         if df is not None and not df.empty:
             df.to_csv("apt_data.csv", index=False, encoding="utf-8-sig")
             print("데이터 저장 성공: apt_data.csv")
+        else:
+            print("데이터 수집 실패...")
