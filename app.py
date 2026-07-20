@@ -13,7 +13,7 @@ def fetch_apartment_data_robust(service_key, lawd_cd, deal_ym):
         return response.read().decode('utf-8')
 
 # 현재 경로에 어떤 파일이 있는지 출력해서 디버깅
-st.write("현재 경로 파일 리스트:", os.listdir('.'))
+#st.write("현재 경로 파일 리스트:", os.listdir('.'))
 
 # 페이지 설정
 st.set_page_config(page_title="PropView - 아파트 실거래가", layout="wide")
