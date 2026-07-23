@@ -28,10 +28,25 @@ if os.path.exists(DATA_FILE):
   # 2. 💡 그 후 화면에 보여주기 좋게 컬럼 이름에 단위 명시하기
   df = df.rename(columns={"면적": "면적 (㎡)", "거래금액": "거래금액 (만원)"})
 
-  # --- 사이드바 필터 설정 ---
+# --- 사이드바 필터 설정 ---
   st.sidebar.header("🔍 필터 및 정렬 설정")
 
-  # 정렬 기준 선택
+  # 1. 💡 [추가] 지역구 선택 필터 (사이드바 최상단에 배치하면 편합니다)
+  # 데이터에 있는 지역구 목록을 추출 (가나다순 정렬)
+  all_regions = sorted(df["지역구"].dropna().unique().tolist())
+  selected_regions = st.sidebar.multiselect(
+      "지역구 선택 (복수 선택 가능)",
+      options=all_regions,
+      default=[],  # 기본값은 전체 선택 (비워두면 전체)
+  )
+
+  # 지역구가 선택되었다면 먼저 데이터프레임을 해당 지역구들로 1차 필터링
+  if selected_regions:
+    df_filtered_region = df[df["지역구"].isin(selected_regions)]
+  else:
+    df_filtered_region = df  # 선택 안 하면 전체 지역
+
+  # 2. 정렬 기준 선택 (이후부터는 df_filtered_region을 기준으로 작동)
   sort_option = st.sidebar.selectbox(
       "정렬 기준",
       [
