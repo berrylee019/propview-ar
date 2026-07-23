@@ -1,19 +1,6 @@
-import streamlit as st
-import pandas as pd
 import os
-import urllib.request
-import urllib.parse
-
-def fetch_apartment_data_robust(service_key, lawd_cd, deal_ym):
-    base_url = "https://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev"
-    params = {'serviceKey': service_key, 'LAWD_CD': lawd_cd, 'DEAL_YMD': deal_ym}
-    url = f"{base_url}?{urllib.parse.urlencode(params)}"
-    
-    with urllib.request.urlopen(url) as response:
-        return response.read().decode('utf-8')
-
-# 현재 경로에 어떤 파일이 있는지 출력해서 디버깅
-#st.write("현재 경로 파일 리스트:", os.listdir('.'))
+import pandas as pd
+import streamlit as st
 
 # 페이지 설정
 st.set_page_config(
@@ -32,19 +19,19 @@ if os.path.exists(DATA_FILE):
   # 결측치(NaN) 방지 및 문자열 변환
   df["아파트"] = df["아파트"].fillna("").astype(str)
 
-  # 💡 [추가] 면적과 거래금액 컬럼 이름에 단위 명시하기
-  df = df.rename(columns={"면적": "면적 (㎡)", "거래금액": "거래금액 (만원)"})
-
-  # 금액 데이터 숫자로 변환 안전장치
+  # 1. 💡 컬럼명 바꾸기 전에 숫자로 변환 (에러 원인 해결!)
   if "거래금액_num" not in df.columns:
     df["거래금액_num"] = (
         df["거래금액"].astype(str).str.replace(",", "", regex=True).astype(int)
     )
 
+  # 2. 💡 그 후 화면에 보여주기 좋게 컬럼 이름에 단위 명시하기
+  df = df.rename(columns={"면적": "면적 (㎡)", "거래금액": "거래금액 (만원)"})
+
   # --- 사이드바 필터 설정 ---
   st.sidebar.header("🔍 필터 및 정렬 설정")
 
-  # 1. 정렬 기준 선택
+  # 정렬 기준 선택
   sort_option = st.sidebar.selectbox(
       "정렬 기준",
       [
@@ -56,9 +43,8 @@ if os.path.exists(DATA_FILE):
       ],
   )
 
-  # 2. 정렬 옵션에 따른 데이터 정렬 및 아파트 선택 필터
+  # 정렬 옵션에 따른 데이터 정렬 및 아파트 선택 필터
   if sort_option == "거래 횟수 많은 순 (인기순)":
-    # 거래량이 많은 아파트 순으로 정렬
     apt_counts = df["아파트"].value_counts().reset_index()
     apt_counts.columns = ["아파트", "거래 건수"]
 
@@ -112,7 +98,6 @@ if os.path.exists(DATA_FILE):
   # --- 차트 표시 ---
   st.subheader("📈 아파트별 거래가 통계")
   if not filtered_df.empty:
-    # 상위 50개 데이터만 차트에 표시 (데이터가 너무 많으면 브라우저가 느려짐)
     chart_data = filtered_df.head(50).set_index("아파트")["거래금액_num"]
     st.bar_chart(chart_data)
   else:
