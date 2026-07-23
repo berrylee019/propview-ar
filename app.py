@@ -32,6 +32,9 @@ if os.path.exists(DATA_FILE):
   # 결측치(NaN) 방지 및 문자열 변환
   df["아파트"] = df["아파트"].fillna("").astype(str)
 
+  # 💡 [추가] 면적과 거래금액 컬럼 이름에 단위 명시하기
+  df = df.rename(columns={"면적": "면적 (㎡)", "거래금액": "거래금액 (만원)"})
+
   # 금액 데이터 숫자로 변환 안전장치
   if "거래금액_num" not in df.columns:
     df["거래금액_num"] = (
