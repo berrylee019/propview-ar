@@ -23,6 +23,7 @@ st.markdown("수집된 부동산 데이터를 실시간으로 확인합니다.")
 
 # 데이터 파일 로드
 DATA_FILE = "apt_data.csv"
+df = pd.read_csv('apt_data.csv')
 
 if os.path.exists(DATA_FILE):
     df = pd.read_csv(DATA_FILE)
@@ -30,6 +31,26 @@ if os.path.exists(DATA_FILE):
     # 1. 사이드바 필터
     st.sidebar.header("필터 설정")
     selected_apt = st.sidebar.multiselect("아파트 선택", df['아파트'].unique())
+
+    # 사이드바 또는 상단에 정렬 기준 선택 옵션 추가
+    sort_option = st.selectbox(
+        '📊 정렬 및 인기순 필터 선택',
+        ['거래 횟수 많은 순 (인기순)', '최신 건축년도순', '거래금액 높은순', '거래금액 낮은순']
+    )
+
+    if sort_option == '거래 횟수 많은 순 (인기순)':
+        # 아파트 이름별 거래 건수를 계산해서 인기순으로 정렬
+        apt_counts = df['아파트'].value_counts().reset_index()
+        apt_counts.columns = ['아파트', '거래 건수']
+        
+        # 상위 인기 아파트 목록을 멀티셀렉트나 셀렉박스로 연동
+        selected_apt = st.selectbox('인기 아파트 선택', apt_counts['아파트'].head(50))
+        filtered_df = df[df['아파트'] == selected_apt]
+    
+    elif sort_option == '거래금액 높은순':
+        filtered_df = df.sort_values(by='거래금액', ascending=False)
+    else:
+        filtered_df = df
     
     # 데이터 필터링
     if selected_apt:
@@ -39,6 +60,9 @@ if os.path.exists(DATA_FILE):
     st.subheader("최근 실거래 내역")
     st.dataframe(df, use_container_width=True)
     
+    # 화면에 데이터 및 차트 표시
+    st.dataframe(filtered_df)
+
     # 3. 간단한 차트 (가격 통계)
     st.subheader("아파트별 거래가 통계")
     # 금액 데이터 전처리 (콤마 제거 및 숫자로 변환)
