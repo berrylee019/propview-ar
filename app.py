@@ -44,7 +44,11 @@ if os.path.exists(DATA_FILE):
         apt_counts.columns = ['아파트', '거래 건수']
         
         # 상위 인기 아파트 목록을 멀티셀렉트나 셀렉박스로 연동
-        selected_apt = st.selectbox('인기 아파트 선택', apt_counts['아파트'].head(50))
+        selected_apt = st.multiselect(
+            '인기 아파트 선택 (복수 선택 가능)', 
+            options=apt_counts['아파트'].head(50).tolist(),
+            default=[apt_counts['아파트'].iloc[0]]  # 기본값으로 1위 아파트 지정
+        )
         filtered_df = df[df['아파트'] == selected_apt]
     
     elif sort_option == '거래금액 높은순':
@@ -54,7 +58,9 @@ if os.path.exists(DATA_FILE):
     
     # 데이터 필터링
     if selected_apt:
-        df = df[df['아파트'].isin(selected_apt)]
+        filtered_df = df[df['아파트'].isin(selected_apt)]
+    else:
+        filtered_df = df
     
     # 2. 메인 화면 데이터 표시
     st.subheader("최근 실거래 내역")
