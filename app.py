@@ -18,37 +18,37 @@ if os.path.exists(DATA_FILE):
 
   # 결측치(NaN) 방지 및 문자열 변환
   df["아파트"] = df["아파트"].fillna("").astype(str)
+  df["지역구"] = df["지역구"].fillna("").astype(str)
 
-  # 1. 💡 컬럼명 바꾸기 전에 숫자로 변환 (에러 원인 해결!)
+  # 1. 금액 데이터 숫자로 변환
   if "거래금액_num" not in df.columns:
     df["거래금액_num"] = (
         df["거래금액"].astype(str).str.replace(",", "", regex=True).astype(int)
     )
 
-  # 2. 💡 그 후 화면에 보여주기 좋게 컬럼 이름에 단위 명시하기
+  # 2. 화면에 보여주기 좋게 컬럼 이름에 단위 명시하기
   df = df.rename(columns={"면적": "면적 (㎡)", "거래금액": "거래금액 (만원)"})
 
-# --- 사이드바 필터 설정 ---
+  # --- 사이드바 필터 설정 ---
   st.sidebar.header("🔍 필터 및 정렬 설정")
 
-  # 1. 💡 [추가] 지역구 선택 필터 (사이드바 최상단에 배치하면 편합니다)
-  # 데이터에 있는 지역구 목록을 추출 (가나다순 정렬)
+  # 1단계: 지역구 선택 (가장 먼저 적용)
   all_regions = sorted(df["지역구"].dropna().unique().tolist())
   selected_regions = st.sidebar.multiselect(
-      "지역구 선택 (복수 선택 가능)",
+      "📍 지역구 선택 (복수 선택 가능)",
       options=all_regions,
-      default=[],  # 기본값은 전체 선택 (비워두면 전체)
+      default=[],  # 비워두면 전체 지역
   )
 
-  # 지역구가 선택되었다면 먼저 데이터프레임을 해당 지역구들로 1차 필터링
+  # 지역구 필터 적용
   if selected_regions:
-    df_filtered_region = df[df["지역구"].isin(selected_regions)]
+    df_step1 = df[df["지역구"].isin(selected_regions)]
   else:
-    df_filtered_region = df  # 선택 안 하면 전체 지역
+    df_step1 = df
 
-  # 2. 정렬 기준 선택 (이후부터는 df_filtered_region을 기준으로 작동)
+  # 2단계: 정렬 기준 선택
   sort_option = st.sidebar.selectbox(
-      "정렬 기준",
+      "📊 정렬 기준",
       [
           "기본 (전체보기)",
           "거래 횟수 많은 순 (인기순)",
@@ -58,9 +58,9 @@ if os.path.exists(DATA_FILE):
       ],
   )
 
-  # 정렬 옵션에 따른 데이터 정렬 및 아파트 선택 필터
+  # 정렬 옵션 적용 (지역구 필터가 적용된 df_step1 기준!)
   if sort_option == "거래 횟수 많은 순 (인기순)":
-    apt_counts = df["아파트"].value_counts().reset_index()
+    apt_counts = df_step1["아파트"].value_counts().reset_index()
     apt_counts.columns = ["아파트", "거래 건수"]
 
     selected_apt = st.sidebar.multiselect(
@@ -69,42 +69,42 @@ if os.path.exists(DATA_FILE):
     )
 
     if selected_apt:
-      filtered_df = df[df["아파트"].isin(selected_apt)]
+      filtered_df = df_step1[df_step1["아파트"].isin(selected_apt)]
     else:
-      filtered_df = df
+      filtered_df = df_step1
 
   elif sort_option == "거래금액 높은순":
-    filtered_df = df.sort_values(by="거래금액_num", ascending=False)
+    filtered_df = df_step1.sort_values(by="거래금액_num", ascending=False)
     selected_apt = st.sidebar.multiselect(
-        "아파트 직접 선택 (선택 시 해당 아파트만)", df["아파트"].unique()
+        "아파트 직접 선택 (선택 시 해당 아파트만)", df_step1["아파트"].unique()
     )
     if selected_apt:
       filtered_df = filtered_df[filtered_df["아파트"].isin(selected_apt)]
 
   elif sort_option == "거래금액 낮은순":
-    filtered_df = df.sort_values(by="거래금액_num", ascending=True)
+    filtered_df = df_step1.sort_values(by="거래금액_num", ascending=True)
     selected_apt = st.sidebar.multiselect(
-        "아파트 직접 선택 (선택 시 해당 아파트만)", df["아파트"].unique()
+        "아파트 직접 선택 (선택 시 해당 아파트만)", df_step1["아파트"].unique()
     )
     if selected_apt:
       filtered_df = filtered_df[filtered_df["아파트"].isin(selected_apt)]
 
   elif sort_option == "최신 건축년도순":
-    filtered_df = df.sort_values(by="건축년도", ascending=False)
+    filtered_df = df_step1.sort_values(by="건축년도", ascending=False)
     selected_apt = st.sidebar.multiselect(
-        "아파트 직접 선택 (선택 시 해당 아파트만)", df["아파트"].unique()
+        "아파트 직접 선택 (선택 시 해당 아파트만)", df_step1["아파트"].unique()
     )
     if selected_apt:
       filtered_df = filtered_df[filtered_df["아파트"].isin(selected_apt)]
 
   else:  # 기본 전체보기
     selected_apt = st.sidebar.multiselect(
-        "아파트 직접 선택", df["아파트"].unique()
+        "아파트 직접 선택", df_step1["아파트"].unique()
     )
     if selected_apt:
-      filtered_df = df[df["아파트"].isin(selected_apt)]
+      filtered_df = df_step1[df_step1["아파트"].isin(selected_apt)]
     else:
-      filtered_df = df
+      filtered_df = df_step1
 
   # --- 메인 화면 데이터 표시 ---
   st.subheader(f"📊 실거래 내역 (총 {len(filtered_df):,}건)")
